@@ -10,8 +10,9 @@
   --border2:   rgba(255,255,255,0.1);
   --border3:   rgba(255,255,255,0.15);
   --text:      #ededf5;
-  --text2:     rgba(255,255,255,0.44);
-  --text3:     rgba(255,255,255,0.22);
+  /* Muted copy: Stripe/Linear-style contrast on dark — still clearly below --text */
+  --text2:     rgba(255,255,255,0.74);
+  --text3:     rgba(255,255,255,0.52);
   --purple:    #8b5cf6;
   --purple2:   #a78bfa;
   --purple3:   #c4b5fd;
@@ -365,9 +366,23 @@ section{position:relative;z-index:1;}
 /* ════════════════════════════════════════════════ */
 /*  5. MOBILE / APP SECTION                         */
 /* ════════════════════════════════════════════════ */
-#app{padding:108px 0;border-top:1px solid var(--border);overflow:hidden;}
+#app{
+  padding:108px 0;border-top:1px solid var(--border);
+  overflow-x:hidden;
+  overflow-y:visible;
+}
 .app-inner{display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center;}
-.app-text .h2{font-size:clamp(32px,4vw,48px);}
+.app-text{
+  min-width:0;
+  position:relative;
+  z-index:2;
+}
+.app-text .h2{
+  font-size:clamp(32px,4vw,48px);
+  line-height:1.12;
+  overflow-wrap:anywhere;
+  word-wrap:break-word;
+}
 .app-bullets{display:flex;flex-direction:column;gap:11px;margin:24px 0 32px;}
 .ab{display:flex;align-items:flex-start;gap:10px;font-size:14px;color:var(--text2);line-height:1.55;}
 .ab-dot{width:5px;height:5px;border-radius:50%;background:var(--purple2);flex-shrink:0;margin-top:7px;}
@@ -482,7 +497,7 @@ section{position:relative;z-index:1;}
 .stars{display:flex;gap:2px;margin-bottom:14px;}
 .star{color:#fbbf24;font-size:12.5px;}
 .tcard-text{
-  font-size:14px;color:rgba(255,255,255,.68);
+  font-size:14px;color:var(--text2);
   line-height:1.76;font-style:italic;font-weight:300;
   flex:1;margin-bottom:18px;
 }
@@ -643,6 +658,14 @@ section{position:relative;z-index:1;}
 @media(max-width:520px){
   .problem-grid{grid-template-columns:1fr;}
   .feat-grid{grid-template-columns:1fr;}
+  /* Narrow phones: bump muted text for small screens and arm's-length viewing */
+  :root{
+    --text2:rgba(255,255,255,0.80);
+    --text3:rgba(255,255,255,0.60);
+  }
+  /* Narrow phones: single-line flow reads better than a forced <br> mid headline */
+  #app .app-text .h2 br{display:none;}
+  #app .app-text .eyebrow{margin-bottom:12px;}
 }
 
 @keyframes shakeinput {

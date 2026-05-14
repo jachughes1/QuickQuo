@@ -20,8 +20,8 @@
   --border3: rgba(255,255,255,0.15);
 
   --text:    #ededf5;
-  --text2:   rgba(255,255,255,0.44);
-  --text3:   rgba(255,255,255,0.22);
+  --text2:   rgba(255,255,255,0.74);
+  --text3:   rgba(255,255,255,0.52);
 
   --purple:  #8b5cf6;
   --purple2: #a78bfa;
@@ -95,7 +95,7 @@ h1, h2, h3, h4, h5, h6 {
            border rounded-[10px]
            px-[26px] py-[13px] text-[15px] cursor-pointer
            transition-all duration-200;
-    color: rgba(255, 255, 255, 0.5);
+    color: var(--text2);
     background-color: rgba(255, 255, 255, 0.03);
     border-color: rgba(255, 255, 255, 0.1);
   }
