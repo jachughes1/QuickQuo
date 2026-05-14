@@ -1,0 +1,1989 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>QuickQuo — Interactive Demo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════════════════════════
+   DESIGN TOKENS
+═══════════════════════════════════════════════════════════ */
+:root {
+  --bg:       #05050a;
+  --bg2:      #09090f;
+  --bg3:      #0d0d16;
+  --bg4:      #12121e;
+  --card:     #0f0f1a;
+  --card2:    #141424;
+  --bo:       rgba(255,255,255,0.06);
+  --bo2:      rgba(255,255,255,0.11);
+  --bo3:      rgba(255,255,255,0.18);
+  --tx:       #ededf5;
+  --tx2:      rgba(255,255,255,0.42);
+  --tx3:      rgba(255,255,255,0.22);
+  --pu:       #8b5cf6;
+  --pu2:      #a78bfa;
+  --pu3:      #c4b5fd;
+  --pu-dim:   rgba(139,92,246,0.12);
+  --pu-glow:  rgba(139,92,246,0.3);
+  --gr:       #34d399;
+  --gr2:      rgba(52,211,153,0.12);
+  --or:       #fb923c;
+  --or2:      rgba(251,146,60,0.12);
+  --re:       #f87171;
+  --re2:      rgba(248,113,113,0.1);
+  --bl:       #60a5fa;
+  --bl2:      rgba(96,165,250,0.1);
+  --ye:       #fbbf24;
+  --r:        14px;
+  --r2:       10px;
+  --r3:       8px;
+  --safe-b:   env(safe-area-inset-bottom, 0px);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   RESET & BASE
+═══════════════════════════════════════════════════════════ */
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+html { scroll-behavior:smooth; height:100%; -webkit-text-size-adjust:100%; }
+body {
+  font-family:'Geist',system-ui,sans-serif;
+  background:var(--bg); color:var(--tx);
+  min-height:100%; overflow-x:hidden;
+  -webkit-font-smoothing:antialiased;
+}
+input,select,textarea,button { font-family:inherit; }
+a { color:inherit; text-decoration:none; }
+::selection { background:rgba(139,92,246,0.3); color:#fff; }
+::-webkit-scrollbar { width:3px; height:3px; }
+::-webkit-scrollbar-track { background:transparent; }
+::-webkit-scrollbar-thumb { background:rgba(255,255,255,0.1); border-radius:2px; }
+
+/* ═══════════════════════════════════════════════════════════
+   DEMO SHELL — phone frame on desktop, full-screen on mobile
+═══════════════════════════════════════════════════════════ */
+.demo-shell {
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:flex-start;
+  background:var(--bg);
+}
+
+/* Top bar */
+.demo-topbar {
+  width:100%;
+  max-width:430px;
+  padding:16px 20px 12px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  flex-shrink:0;
+}
+.demo-logo { display:flex; align-items:center; gap:8px; }
+.demo-logomark {
+  width:28px; height:28px; border-radius:7px;
+  background:linear-gradient(135deg,var(--pu),#7c3aed);
+  display:flex; align-items:center; justify-content:center;
+  font-size:13px; font-weight:700; color:white;
+  box-shadow:0 0 16px var(--pu-glow);
+}
+.demo-logotext { font-size:15px; font-weight:700; letter-spacing:-.3px; }
+.demo-logotext span { color:var(--pu2); }
+.demo-badge {
+  font-size:10px; font-weight:700; letter-spacing:.5px;
+  color:var(--pu2); background:var(--pu-dim);
+  border:1px solid rgba(139,92,246,0.25);
+  padding:3px 8px; border-radius:20px;
+}
+
+/* Phone viewport */
+.phone-viewport {
+  width:100%;
+  max-width:430px;
+  flex:1;
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+  position:relative;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   DEMO NAV TABS
+═══════════════════════════════════════════════════════════ */
+.demo-nav {
+  padding:0 16px 12px;
+  display:flex;
+  gap:6px;
+  overflow-x:auto;
+  flex-shrink:0;
+  scrollbar-width:none;
+  -ms-overflow-style:none;
+}
+.demo-nav::-webkit-scrollbar { display:none; }
+.dnav-btn {
+  flex-shrink:0;
+  padding:7px 13px;
+  border-radius:20px;
+  font-size:12px; font-weight:600;
+  cursor:pointer;
+  border:1px solid var(--bo2);
+  background:rgba(255,255,255,0.03);
+  color:var(--tx2);
+  transition:all .2s;
+  white-space:nowrap;
+}
+.dnav-btn.active {
+  background:var(--pu-dim);
+  border-color:rgba(139,92,246,0.3);
+  color:var(--pu2);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   SCREEN CONTAINER
+═══════════════════════════════════════════════════════════ */
+.screens {
+  flex:1;
+  overflow:hidden;
+  position:relative;
+  padding:0 0 80px;
+}
+.screen {
+  position:absolute; inset:0;
+  overflow-y:auto;
+  padding:0 0 8px;
+  opacity:0;
+  transform:translateY(12px);
+  pointer-events:none;
+  transition:opacity .32s ease, transform .32s ease;
+}
+.screen.active {
+  opacity:1;
+  transform:translateY(0);
+  pointer-events:auto;
+  position:relative;
+}
+.screen-pad { padding:0 16px; }
+
+/* ═══════════════════════════════════════════════════════════
+   BOTTOM NAV
+═══════════════════════════════════════════════════════════ */
+.bottom-nav {
+  position:fixed;
+  bottom:0; left:50%;
+  transform:translateX(-50%);
+  width:100%;
+  max-width:430px;
+  padding:10px 20px calc(10px + var(--safe-b));
+  background:rgba(9,9,15,0.92);
+  backdrop-filter:blur(20px);
+  border-top:1px solid var(--bo);
+  display:flex;
+  justify-content:space-around;
+  z-index:100;
+}
+.bnav-item {
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:3px;
+  cursor:pointer;
+  padding:4px 12px;
+  border-radius:var(--r3);
+  transition:all .15s;
+  position:relative;
+}
+.bnav-icon { font-size:20px; }
+.bnav-label { font-size:10px; font-weight:500; color:var(--tx3); }
+.bnav-item.active .bnav-label { color:var(--pu2); }
+.bnav-dot {
+  position:absolute;
+  top:2px; right:8px;
+  width:7px; height:7px;
+  background:var(--re);
+  border-radius:50%;
+  border:1.5px solid var(--bg);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   TYPOGRAPHY HELPERS
+═══════════════════════════════════════════════════════════ */
+.screen-title {
+  font-size:20px; font-weight:700;
+  letter-spacing:-.5px; line-height:1.1;
+}
+.screen-sub {
+  font-size:13px; color:var(--tx2);
+  line-height:1.5; font-weight:400;
+}
+.label-sm {
+  font-size:11px; font-weight:600;
+  text-transform:uppercase; letter-spacing:.8px;
+  color:var(--tx3);
+}
+.section-head {
+  padding:14px 16px 10px;
+  font-size:13px; font-weight:700;
+  display:flex; align-items:center;
+  justify-content:space-between;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   CARDS & SURFACES
+═══════════════════════════════════════════════════════════ */
+.card {
+  background:var(--card);
+  border:1px solid var(--bo);
+  border-radius:var(--r);
+  overflow:hidden;
+}
+.card-body { padding:16px; }
+.card-hover {
+  transition:border-color .2s, transform .2s;
+  cursor:pointer;
+}
+.card-hover:active { transform:scale(0.985); border-color:var(--bo2); }
+
+/* ═══════════════════════════════════════════════════════════
+   STATUS PILLS
+═══════════════════════════════════════════════════════════ */
+.pill {
+  display:inline-flex; align-items:center; gap:3px;
+  font-size:10.5px; font-weight:700;
+  padding:3px 8px; border-radius:20px;
+  white-space:nowrap; letter-spacing:.2px;
+}
+.pill-new      { background:var(--pu-dim); color:var(--pu2); }
+.pill-contact  { background:var(--bl2);    color:var(--bl); }
+.pill-quoted   { background:var(--or2);    color:var(--or); }
+.pill-won      { background:var(--gr2);    color:var(--gr); }
+.pill-lost     { background:var(--re2);    color:var(--re); }
+.pill-done     { background:rgba(255,255,255,0.06); color:var(--tx2); }
+.pill-missed   { background:var(--re2);    color:var(--re); }
+.pill-ai       { background:var(--pu-dim); color:var(--pu3); }
+
+/* ═══════════════════════════════════════════════════════════
+   BUTTONS
+═══════════════════════════════════════════════════════════ */
+.btn {
+  display:inline-flex; align-items:center; justify-content:center; gap:6px;
+  border-radius:var(--r2); border:none; cursor:pointer;
+  font-size:14px; font-weight:600;
+  padding:12px 20px;
+  transition:all .18s;
+  -webkit-user-select:none; user-select:none;
+}
+.btn-full { width:100%; }
+.btn-pu {
+  background:linear-gradient(135deg,var(--pu),#7c3aed);
+  color:white;
+  box-shadow:0 4px 20px var(--pu-glow);
+}
+.btn-pu:active { transform:scale(0.97); }
+.btn-gr {
+  background:var(--gr2);
+  border:1px solid rgba(52,211,153,0.2);
+  color:var(--gr);
+}
+.btn-gr:active { transform:scale(0.97); }
+.btn-ghost {
+  background:rgba(255,255,255,0.05);
+  border:1px solid var(--bo2);
+  color:var(--tx2);
+}
+.btn-ghost:active { background:rgba(255,255,255,0.09); }
+.btn-sm {
+  font-size:12px; font-weight:600;
+  padding:7px 13px; border-radius:var(--r3);
+}
+.btn-xs {
+  font-size:11px; font-weight:600;
+  padding:5px 10px; border-radius:6px;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   KPI CARDS
+═══════════════════════════════════════════════════════════ */
+.kpi-grid {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+  padding:0 16px;
+  margin-bottom:16px;
+}
+.kpi-card {
+  background:var(--card);
+  border:1px solid var(--bo);
+  border-radius:var(--r);
+  padding:14px;
+}
+.kpi-icon-wrap {
+  width:32px; height:32px; border-radius:var(--r3);
+  display:flex; align-items:center; justify-content:center;
+  font-size:15px; margin-bottom:10px;
+}
+.kpi-val {
+  font-size:28px; font-weight:700;
+  letter-spacing:-1px; line-height:1;
+  margin-bottom:4px;
+}
+.kpi-lbl { font-size:11px; color:var(--tx2); font-weight:500; }
+.kpi-delta { font-size:11px; margin-top:4px; }
+.d-up { color:var(--gr); }
+.d-or { color:var(--or); }
+
+/* ═══════════════════════════════════════════════════════════
+   LEAD ROWS
+═══════════════════════════════════════════════════════════ */
+.lead-row {
+  display:flex; align-items:center; gap:12px;
+  padding:12px 16px;
+  border-bottom:1px solid var(--bo);
+  cursor:pointer;
+  transition:background .12s;
+}
+.lead-row:last-child { border-bottom:none; }
+.lead-row:active { background:rgba(255,255,255,0.025); }
+.lead-av {
+  width:38px; height:38px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  font-size:13px; font-weight:700; flex-shrink:0;
+}
+.lead-body { flex:1; min-width:0; }
+.lead-name { font-size:14px; font-weight:600; margin-bottom:2px; }
+.lead-meta { font-size:12px; color:var(--tx2); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.lead-right { display:flex; flex-direction:column; align-items:flex-end; gap:5px; }
+.lead-time { font-size:11px; color:var(--tx3); }
+
+/* ═══════════════════════════════════════════════════════════
+   FORM ELEMENTS
+═══════════════════════════════════════════════════════════ */
+.form-group { display:flex; flex-direction:column; gap:6px; margin-bottom:12px; }
+.form-label { font-size:12px; font-weight:600; color:var(--tx2); }
+.form-input {
+  background:rgba(255,255,255,0.04);
+  border:1px solid var(--bo2);
+  border-radius:var(--r2);
+  padding:13px 14px;
+  font-size:14px; color:var(--tx);
+  outline:none;
+  transition:border-color .15s;
+  width:100%;
+  -webkit-appearance:none;
+}
+.form-input:focus { border-color:rgba(139,92,246,0.5); background:rgba(139,92,246,0.04); }
+.form-input::placeholder { color:var(--tx3); }
+textarea.form-input { resize:none; min-height:90px; line-height:1.5; }
+select.form-input { cursor:pointer; }
+.form-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+
+/* ═══════════════════════════════════════════════════════════
+   UPLOAD ZONE
+═══════════════════════════════════════════════════════════ */
+.upload-zone {
+  border:1.5px dashed var(--bo2);
+  border-radius:var(--r);
+  padding:24px 16px;
+  text-align:center;
+  cursor:pointer;
+  transition:all .2s;
+}
+.upload-zone:active { border-color:var(--pu); background:var(--pu-dim); }
+.upload-icon { font-size:30px; margin-bottom:8px; }
+.upload-text { font-size:14px; font-weight:500; margin-bottom:3px; }
+.upload-sub { font-size:12px; color:var(--tx3); }
+
+/* Contact preference */
+.contact-pref { display:flex; gap:6px; }
+.cp-btn {
+  flex:1; padding:10px 6px;
+  border:1px solid var(--bo2);
+  border-radius:var(--r2);
+  background:rgba(255,255,255,0.03);
+  color:var(--tx2); font-size:12px; font-weight:500;
+  cursor:pointer; text-align:center;
+  transition:all .15s;
+}
+.cp-btn.active {
+  border-color:rgba(139,92,246,0.4);
+  background:var(--pu-dim);
+  color:var(--pu2);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   QUOTE BUILDER
+═══════════════════════════════════════════════════════════ */
+.quote-box {
+  background:var(--bg3);
+  border:1px solid var(--bo);
+  border-radius:var(--r);
+  overflow:hidden;
+}
+.quote-line {
+  display:flex; justify-content:space-between; align-items:center;
+  padding:10px 14px;
+  border-bottom:1px solid var(--bo);
+  font-size:13.5px;
+}
+.quote-line:last-child { border-bottom:none; }
+.ql-label { color:var(--tx2); }
+.ql-amount { font-weight:600; }
+.quote-total {
+  display:flex; justify-content:space-between; align-items:center;
+  padding:13px 14px; background:rgba(52,211,153,0.05);
+  border-top:1px solid rgba(52,211,153,0.15);
+  font-size:15px; font-weight:700;
+}
+.qt-total-amount { color:var(--gr); font-size:17px; }
+
+/* AI typing animation */
+.ai-writing { display:inline-flex; align-items:center; gap:3px; }
+.ai-dot {
+  width:4px; height:4px; border-radius:50%;
+  background:var(--pu2);
+  animation:aidot 1.2s ease infinite;
+}
+.ai-dot:nth-child(2) { animation-delay:.2s; }
+.ai-dot:nth-child(3) { animation-delay:.4s; }
+@keyframes aidot {
+  0%,100% { opacity:.3; transform:scale(1); }
+  50%      { opacity:1;  transform:scale(1.4); }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   PIPELINE KANBAN (horizontal scroll)
+═══════════════════════════════════════════════════════════ */
+.pipeline-scroll {
+  display:flex;
+  gap:10px;
+  padding:0 16px 8px;
+  overflow-x:auto;
+  scrollbar-width:none;
+}
+.pipeline-scroll::-webkit-scrollbar { display:none; }
+.pipeline-col {
+  flex-shrink:0;
+  width:160px;
+}
+.pipeline-col-head {
+  font-size:11px; font-weight:700;
+  letter-spacing:.5px;
+  padding:8px 10px;
+  border-radius:var(--r3) var(--r3) 0 0;
+  display:flex; justify-content:space-between;
+  align-items:center;
+}
+.pipeline-col-body { display:flex; flex-direction:column; gap:7px; }
+.pipeline-card {
+  background:var(--card2);
+  border:1px solid var(--bo);
+  border-radius:var(--r3);
+  padding:10px 11px;
+}
+.pc-name { font-size:12.5px; font-weight:600; margin-bottom:2px; }
+.pc-job  { font-size:11px; color:var(--tx2); margin-bottom:7px; }
+.pc-foot { display:flex; justify-content:space-between; align-items:center; }
+.pc-amt  { font-size:11.5px; font-weight:700; color:var(--gr); }
+.pc-date { font-size:10px; color:var(--tx3); }
+
+/* ═══════════════════════════════════════════════════════════
+   AUTOMATION ITEMS
+═══════════════════════════════════════════════════════════ */
+.auto-item {
+  display:flex; gap:12px;
+  padding:13px 16px;
+  border-bottom:1px solid var(--bo);
+}
+.auto-item:last-child { border-bottom:none; }
+.auto-icon {
+  width:36px; height:36px;
+  border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  font-size:16px; flex-shrink:0;
+}
+.auto-body { flex:1; }
+.auto-title { font-size:13.5px; font-weight:600; margin-bottom:3px; }
+.auto-desc { font-size:12px; color:var(--tx2); line-height:1.4; }
+.auto-meta { font-size:11px; color:var(--tx3); margin-top:5px; }
+.auto-status {
+  display:flex; align-items:center; gap:4px;
+  font-size:11px; font-weight:600;
+}
+
+/* Toggle */
+.toggle {
+  width:40px; height:22px;
+  border-radius:11px;
+  position:relative;
+  cursor:pointer;
+  flex-shrink:0;
+  transition:background .2s;
+  border:1px solid transparent;
+}
+.toggle.on { background:var(--pu); }
+.toggle.off { background:var(--bg4); border-color:var(--bo2); }
+.toggle::after {
+  content:''; position:absolute;
+  width:16px; height:16px; background:white;
+  border-radius:50%; top:2px; left:2px;
+  transition:transform .2s;
+  box-shadow:0 1px 3px rgba(0,0,0,0.3);
+}
+.toggle.on::after  { transform:translateX(18px); }
+
+/* ═══════════════════════════════════════════════════════════
+   MISSED CALL ITEMS
+═══════════════════════════════════════════════════════════ */
+.mc-item {
+  display:flex; align-items:center; gap:12px;
+  padding:12px 16px;
+  border-bottom:1px solid var(--bo);
+}
+.mc-item:last-child { border-bottom:none; }
+.mc-icon {
+  width:38px; height:38px; border-radius:50%;
+  background:var(--re2);
+  border:1px solid rgba(248,113,113,0.2);
+  display:flex; align-items:center; justify-content:center;
+  font-size:16px; flex-shrink:0;
+}
+.mc-info { flex:1; }
+.mc-num { font-size:14px; font-weight:600; margin-bottom:2px; }
+.mc-time { font-size:11.5px; color:var(--tx2); }
+.mc-sms-sent {
+  font-size:11px; font-weight:600; color:var(--gr);
+  display:flex; align-items:center; gap:3px; margin-top:4px;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   SUCCESS STATE
+═══════════════════════════════════════════════════════════ */
+.success-state {
+  text-align:center;
+  padding:40px 24px;
+}
+.success-circle {
+  width:64px; height:64px; border-radius:50%;
+  background:var(--gr2);
+  border:1px solid rgba(52,211,153,0.2);
+  display:flex; align-items:center; justify-content:center;
+  font-size:28px; margin:0 auto 16px;
+  animation:popin .4s cubic-bezier(0.34,1.56,0.64,1);
+}
+@keyframes popin {
+  from { transform:scale(0.5); opacity:0; }
+  to   { transform:scale(1);   opacity:1; }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   TIMELINE / STEPS
+═══════════════════════════════════════════════════════════ */
+.timeline { padding:0 16px; }
+.tl-item {
+  display:flex; gap:14px;
+  margin-bottom:20px;
+  position:relative;
+}
+.tl-item::before {
+  content:''; position:absolute;
+  left:19px; top:36px;
+  width:2px; bottom:-20px;
+  background:var(--bo2);
+}
+.tl-item:last-child::before { display:none; }
+.tl-dot {
+  width:38px; height:38px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  font-size:16px; flex-shrink:0;
+  border:2px solid var(--bo2);
+}
+.tl-dot.done {
+  background:var(--pu-dim);
+  border-color:rgba(139,92,246,0.3);
+}
+.tl-dot.active {
+  background:linear-gradient(135deg,var(--pu),#7c3aed);
+  border-color:var(--pu);
+  box-shadow:0 0 16px var(--pu-glow);
+  animation:tldot 2s ease infinite;
+}
+@keyframes tldot { 0%,100%{box-shadow:0 0 12px var(--pu-glow)} 50%{box-shadow:0 0 24px var(--pu-glow)} }
+.tl-body { flex:1; padding-top:8px; }
+.tl-title { font-size:14px; font-weight:600; margin-bottom:4px; }
+.tl-desc  { font-size:13px; color:var(--tx2); line-height:1.5; }
+.tl-badge { display:inline-block; font-size:11px; font-weight:600; padding:3px 9px; border-radius:20px; margin-top:7px; }
+
+/* ═══════════════════════════════════════════════════════════
+   TOAST
+═══════════════════════════════════════════════════════════ */
+.toast {
+  position:fixed; bottom:100px; left:50%;
+  transform:translateX(-50%) translateY(20px);
+  background:var(--card2);
+  border:1px solid var(--bo2);
+  border-radius:var(--r2);
+  padding:11px 16px;
+  font-size:13px; font-weight:500;
+  display:flex; align-items:center; gap:8px;
+  z-index:999;
+  opacity:0;
+  pointer-events:none;
+  transition:all .3s cubic-bezier(0.34,1.56,0.64,1);
+  white-space:nowrap;
+  max-width:90vw;
+}
+.toast.show {
+  opacity:1;
+  transform:translateX(-50%) translateY(0);
+}
+.toast-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+
+/* ═══════════════════════════════════════════════════════════
+   CTA SECTION
+═══════════════════════════════════════════════════════════ */
+.cta-section {
+  background:linear-gradient(160deg, var(--bg3), rgba(139,92,246,0.06));
+  border:1px solid rgba(139,92,246,0.18);
+  border-radius:var(--r);
+  padding:24px 20px;
+  text-align:center;
+  margin:0 16px;
+}
+.cta-glow {
+  width:80px; height:80px; border-radius:50%;
+  background:radial-gradient(circle, rgba(139,92,246,0.3), transparent 70%);
+  margin:0 auto 12px;
+  display:flex; align-items:center; justify-content:center;
+  font-size:36px;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   NOTIFICATION ITEMS
+═══════════════════════════════════════════════════════════ */
+.notif-banner {
+  display:flex; align-items:flex-start; gap:10px;
+  padding:12px 14px;
+  border-radius:var(--r2);
+  margin-bottom:10px;
+}
+.notif-banner.warn  { background:var(--or2);  border:1px solid rgba(251,146,60,0.2); }
+.notif-banner.info  { background:var(--bl2);  border:1px solid rgba(96,165,250,0.15); }
+.notif-banner.succ  { background:var(--gr2);  border:1px solid rgba(52,211,153,0.2); }
+.notif-banner.purp  { background:var(--pu-dim); border:1px solid rgba(139,92,246,0.2); }
+.notif-icon { font-size:18px; flex-shrink:0; margin-top:1px; }
+.notif-body { flex:1; }
+.notif-title { font-size:13px; font-weight:600; margin-bottom:2px; }
+.notif-desc  { font-size:12px; color:var(--tx2); line-height:1.4; }
+
+/* ═══════════════════════════════════════════════════════════
+   TRADE SELECTOR CHIPS
+═══════════════════════════════════════════════════════════ */
+.trade-chips { display:flex; gap:7px; flex-wrap:wrap; padding:0 16px 14px; }
+.trade-chip {
+  padding:6px 12px;
+  border-radius:20px;
+  font-size:12px; font-weight:600;
+  border:1px solid var(--bo2);
+  background:rgba(255,255,255,0.03);
+  color:var(--tx2);
+  cursor:pointer;
+  transition:all .15s;
+}
+.trade-chip.active {
+  background:var(--pu-dim);
+  border-color:rgba(139,92,246,0.35);
+  color:var(--pu2);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   CHAT BUBBLES (WhatsApp style)
+═══════════════════════════════════════════════════════════ */
+.chat-area {
+  background:rgba(0,0,0,0.15);
+  border-radius:var(--r);
+  overflow:hidden;
+}
+.chat-header {
+  background:#1a5c4f;
+  padding:10px 14px;
+  display:flex; align-items:center; gap:10px;
+}
+.chat-av { width:32px; height:32px; border-radius:50%; background:var(--pu); display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; }
+.chat-name-wrap .chat-name { font-size:13px; font-weight:600; }
+.chat-name-wrap .chat-status { font-size:11px; color:rgba(255,255,255,0.6); }
+.chat-messages { padding:12px; background:rgba(0,20,16,0.4); display:flex; flex-direction:column; gap:8px; }
+.bubble {
+  max-width:82%;
+  padding:9px 11px;
+  border-radius:0 10px 10px 10px;
+  font-size:13px; line-height:1.45;
+}
+.bubble.sent {
+  align-self:flex-end;
+  background:#1a5c4f;
+  border-radius:10px 0 10px 10px;
+}
+.bubble.recv {
+  align-self:flex-start;
+  background:rgba(255,255,255,0.06);
+  border:1px solid var(--bo);
+}
+.bubble-time { font-size:10px; color:rgba(255,255,255,0.35); text-align:right; margin-top:3px; }
+.bubble-quote {
+  background:rgba(139,92,246,0.15);
+  border:1px solid rgba(139,92,246,0.25);
+  border-radius:8px; padding:10px 12px;
+  margin:8px 0;
+}
+.bq-header { font-size:10px; font-weight:700; color:var(--pu2); letter-spacing:.5px; margin-bottom:7px; }
+.bq-row { display:flex; justify-content:space-between; font-size:12px; padding:2px 0; color:var(--tx2); }
+.bq-row span:last-child { color:var(--tx); font-weight:500; }
+.bq-total { display:flex; justify-content:space-between; font-size:13.5px; font-weight:700; padding-top:7px; border-top:1px solid var(--bo2); margin-top:5px; color:var(--gr); }
+
+/* ═══════════════════════════════════════════════════════════
+   PAGE TRANSITION HELPERS
+═══════════════════════════════════════════════════════════ */
+.page-header {
+  padding:20px 16px 14px;
+  position:sticky; top:0; z-index:10;
+  background:linear-gradient(to bottom, var(--bg) 85%, transparent);
+}
+.ph-row { display:flex; align-items:center; justify-content:space-between; }
+
+/* ═══════════════════════════════════════════════════════════
+   PROFILE / TRADE HEADER
+═══════════════════════════════════════════════════════════ */
+.profile-header {
+  padding:20px 16px;
+  background:linear-gradient(160deg, rgba(139,92,246,0.1), transparent);
+  border-bottom:1px solid var(--bo);
+  display:flex; align-items:center; gap:12px;
+}
+.profile-av {
+  width:48px; height:48px; border-radius:14px;
+  display:flex; align-items:center; justify-content:center;
+  font-size:20px; font-weight:800; color:white;
+  background:linear-gradient(135deg,var(--pu),#7c3aed);
+  flex-shrink:0;
+}
+.profile-name { font-size:16px; font-weight:700; letter-spacing:-.3px; }
+.profile-meta { font-size:12px; color:var(--tx2); margin-top:2px; }
+.profile-slug {
+  font-size:11px; color:var(--pu2);
+  background:var(--pu-dim); border:1px solid rgba(139,92,246,0.2);
+  border-radius:6px; padding:2px 8px;
+  display:inline-flex; align-items:center; gap:4px;
+  margin-top:6px;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   ANIMATED PULSE DOT
+═══════════════════════════════════════════════════════════ */
+.live-dot {
+  width:7px; height:7px; border-radius:50%;
+  background:var(--gr);
+  display:inline-block;
+  animation:livepulse 2s ease infinite;
+}
+@keyframes livepulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+/* ═══════════════════════════════════════════════════════════
+   DIVIDERS & SPACING
+═══════════════════════════════════════════════════════════ */
+.divider { height:1px; background:var(--bo); margin:8px 0; }
+.spacer { height:16px; }
+.spacer-sm { height:8px; }
+.spacer-lg { height:24px; }
+.row { display:flex; align-items:center; gap:8px; }
+.row-between { display:flex; align-items:center; justify-content:space-between; }
+
+/* ═══════════════════════════════════════════════════════════
+   REVIEW CARD
+═══════════════════════════════════════════════════════════ */
+.review-card { padding:14px 16px; border-bottom:1px solid var(--bo); }
+.review-card:last-child { border-bottom:none; }
+.review-stars { color:var(--ye); font-size:13px; letter-spacing:1px; margin-bottom:5px; }
+.review-text { font-size:13px; color:var(--tx2); line-height:1.5; font-style:italic; }
+.review-author { font-size:12px; font-weight:600; margin-top:7px; }
+.review-job { font-size:11px; color:var(--tx3); }
+
+/* ═══════════════════════════════════════════════════════════
+   RESPONSIVE: DESKTOP WRAPPER
+═══════════════════════════════════════════════════════════ */
+@media (min-width:600px) {
+  .demo-shell {
+    padding:32px 0;
+    background: radial-gradient(ellipse 60% 50% at 50% 0%, rgba(139,92,246,0.08), transparent 70%), var(--bg);
+  }
+  .demo-topbar,
+  .phone-viewport {
+    max-width:390px;
+  }
+  .phone-viewport {
+    border:1px solid var(--bo2);
+    border-radius:24px;
+    overflow:hidden;
+    box-shadow:0 40px 100px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,255,255,0.04);
+    height:780px;
+    max-height:80vh;
+    background:var(--bg);
+  }
+  .bottom-nav {
+    position:absolute;
+    border-radius:0 0 24px 24px;
+    bottom:0;
+  }
+  .toast { bottom:110px; }
+  .screens { max-height:calc(100% - 0px); }
+}
+</style>
+</head>
+<body>
+
+<div class="demo-shell">
+
+  <!-- TOP BAR -->
+  <div class="demo-topbar">
+    <div class="demo-logo">
+      <div class="demo-logomark">Q</div>
+      <div class="demo-logotext">Quick<span>Quo</span></div>
+    </div>
+    <div class="demo-badge">INTERACTIVE DEMO</div>
+  </div>
+
+  <!-- PHONE VIEWPORT -->
+  <div class="phone-viewport">
+
+    <!-- DEMO NAV TABS -->
+    <div class="demo-nav" id="demo-nav">
+      <button class="dnav-btn active" onclick="switchDemo('dashboard')">Dashboard</button>
+      <button class="dnav-btn" onclick="switchDemo('customer')">Quote Page</button>
+      <button class="dnav-btn" onclick="switchDemo('ai-quote')">AI Quote</button>
+      <button class="dnav-btn" onclick="switchDemo('missed')">Missed Calls</button>
+      <button class="dnav-btn" onclick="switchDemo('pipeline')">Pipeline</button>
+      <button class="dnav-btn" onclick="switchDemo('reviews')">Reviews</button>
+    </div>
+
+    <!-- SCREENS WRAPPER -->
+    <div class="screens">
+
+      <!-- ═══════════════════════════════════════════════
+           SCREEN 1: TRADESMAN DASHBOARD
+      ═══════════════════════════════════════════════ -->
+      <div class="screen active" id="screen-dashboard">
+
+        <!-- Sticky header -->
+        <div class="page-header">
+          <div class="ph-row">
+            <div>
+              <div class="screen-title">Good morning, John 👋</div>
+              <div style="font-size:12px;color:var(--tx2);margin-top:3px;display:flex;align-items:center;gap:5px">
+                <span class="live-dot"></span> 4 new leads today
+              </div>
+            </div>
+            <button class="btn btn-sm btn-pu" onclick="switchDemo('customer');showToast('Opening your quote page…','purple')">
+              🔗 My Page
+            </button>
+          </div>
+
+          <!-- Trade selector -->
+          <div class="trade-chips" style="padding:12px 0 0">
+            <div class="trade-chip active" onclick="setTrade(this,'John\'s Roofing','Roofer · SE London')">🏠 Roofer</div>
+            <div class="trade-chip" onclick="setTrade(this,'Dave\'s Plumbing','Plumber · Bristol')">🔧 Plumber</div>
+            <div class="trade-chip" onclick="setTrade(this,'Spark Electric','Electrician · Manchester')">⚡ Electrician</div>
+            <div class="trade-chip" onclick="setTrade(this,'Oak Carpentry','Carpenter · Leeds')">🪵 Carpenter</div>
+            <div class="trade-chip" onclick="setTrade(this,'Green Gardens','Landscaper · Surrey')">🌿 Landscaper</div>
+          </div>
+        </div>
+
+        <!-- KPI grid -->
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <div class="kpi-icon-wrap" style="background:var(--pu-dim)">👤</div>
+            <div class="kpi-val" style="color:var(--pu2)" id="kpi-leads">12</div>
+            <div class="kpi-lbl">New Leads</div>
+            <div class="kpi-delta d-up">↑ 3 this week</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-icon-wrap" style="background:var(--or2)">📄</div>
+            <div class="kpi-val" style="color:var(--or)" id="kpi-quotes">8</div>
+            <div class="kpi-lbl">Quotes Sent</div>
+            <div class="kpi-delta d-or">2 awaiting reply</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-icon-wrap" style="background:var(--gr2)">🏆</div>
+            <div class="kpi-val" style="color:var(--gr)" id="kpi-won">5</div>
+            <div class="kpi-lbl">Jobs Won</div>
+            <div class="kpi-delta d-up" id="kpi-won-val">↑ £14,200</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-icon-wrap" style="background:var(--re2)">📞</div>
+            <div class="kpi-val" style="color:var(--re)">3</div>
+            <div class="kpi-lbl">Missed Calls</div>
+            <div class="kpi-delta" style="color:var(--or)">⚡ Auto SMS sent</div>
+          </div>
+        </div>
+
+        <!-- Follow-up reminders -->
+        <div class="screen-pad" style="margin-bottom:14px">
+          <div class="label-sm" style="margin-bottom:8px;padding:0 2px">⏰ Actions needed</div>
+          <div class="notif-banner warn" style="cursor:pointer" onclick="switchDemo('ai-quote');showToast('Opening AI quote draft…','purple')">
+            <div class="notif-icon">🤖</div>
+            <div class="notif-body">
+              <div class="notif-title">AI Quote ready — Sarah Mitchell</div>
+              <div class="notif-desc">Flat roof replacement · SE22 · Tap to review & send</div>
+            </div>
+            <div style="color:var(--tx3);font-size:18px;align-self:center">›</div>
+          </div>
+          <div class="notif-banner info" style="cursor:pointer" onclick="switchDemo('missed');showToast('Viewing missed calls…','blue')">
+            <div class="notif-icon">📵</div>
+            <div class="notif-body">
+              <div class="notif-title">3 missed calls — auto-SMS sent</div>
+              <div class="notif-desc">Quote link delivered to all 3 callers automatically</div>
+            </div>
+            <div style="color:var(--tx3);font-size:18px;align-self:center">›</div>
+          </div>
+        </div>
+
+        <!-- Recent leads -->
+        <div class="card screen-pad" style="margin-bottom:14px">
+          <div class="section-head">
+            <span>🔥 Recent Leads</span>
+            <button class="btn btn-xs btn-ghost" onclick="switchDemo('pipeline');showToast('Opening pipeline…','purple')">Pipeline →</button>
+          </div>
+          <div class="lead-row" onclick="switchDemo('ai-quote');showToast('Opening AI quote for Sarah…','purple')">
+            <div class="lead-av" style="background:var(--pu-dim);color:var(--pu2)">SM</div>
+            <div class="lead-body">
+              <div class="lead-name">Sarah Mitchell</div>
+              <div class="lead-meta">Flat roof replacement · SE22 · 2 photos</div>
+            </div>
+            <div class="lead-right">
+              <div class="lead-time">2m ago</div>
+              <div class="pill pill-new">NEW</div>
+            </div>
+          </div>
+          <div class="lead-row" onclick="showToast('Lead opened — David Walsh','blue')">
+            <div class="lead-av" style="background:var(--bl2);color:var(--bl)">DW</div>
+            <div class="lead-body">
+              <div class="lead-name">David Walsh</div>
+              <div class="lead-meta">Ridge tiles + moss treatment · SW16</div>
+            </div>
+            <div class="lead-right">
+              <div class="lead-time">1h ago</div>
+              <div class="pill pill-new">NEW</div>
+            </div>
+          </div>
+          <div class="lead-row" onclick="showToast('Quote already sent to Priya','green')">
+            <div class="lead-av" style="background:var(--gr2);color:var(--gr)">PK</div>
+            <div class="lead-body">
+              <div class="lead-name">Priya Kumar</div>
+              <div class="lead-meta">Flat roof repair, water damage · N1</div>
+            </div>
+            <div class="lead-right">
+              <div class="lead-time">3h ago</div>
+              <div class="pill pill-contact">CONTACTED</div>
+            </div>
+          </div>
+          <div class="lead-row" onclick="showToast('Tom accepted the quote! 🎉','green')">
+            <div class="lead-av" style="background:var(--or2);color:var(--or)">TB</div>
+            <div class="lead-body">
+              <div class="lead-name">Tom Bridges</div>
+              <div class="lead-meta">Full re-roof · Victorian terrace · SE1</div>
+            </div>
+            <div class="lead-right">
+              <div class="lead-time">5h ago</div>
+              <div class="pill pill-won">WON ✓</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Spacer for bottom nav -->
+        <div class="spacer-lg"></div>
+
+      </div>
+
+      <!-- ═══════════════════════════════════════════════
+           SCREEN 2: CUSTOMER QUOTE PAGE
+      ═══════════════════════════════════════════════ -->
+      <div class="screen" id="screen-customer">
+
+        <!-- Branded hero -->
+        <div style="background:linear-gradient(160deg,rgba(139,92,246,0.12),rgba(0,0,0,0));padding:24px 16px 20px;border-bottom:1px solid var(--bo)">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
+            <div style="width:46px;height:46px;border-radius:13px;background:linear-gradient(135deg,var(--pu),#7c3aed);display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:800;color:white;box-shadow:0 6px 20px var(--pu-glow)">JR</div>
+            <div>
+              <div style="font-size:16px;font-weight:700" id="cust-biz-name">John's Roofing</div>
+              <div style="font-size:11.5px;color:var(--tx2);display:flex;align-items:center;gap:5px;margin-top:2px">
+                ⭐ 4.9 · 23 reviews &nbsp;·&nbsp; SE London
+              </div>
+            </div>
+          </div>
+          <div style="font-size:21px;font-weight:800;letter-spacing:-.5px;line-height:1.15;margin-bottom:7px" id="cust-headline">Get Your Free Roofing<br>Quote in Minutes</div>
+          <div style="font-size:13px;color:var(--tx2);line-height:1.55">Upload photos or describe your job — we'll send a personalised quote fast.</div>
+          <div style="display:flex;gap:12px;margin-top:14px;flex-wrap:wrap">
+            <span style="font-size:12px;color:var(--tx2);display:flex;align-items:center;gap:4px">✅ Free quote</span>
+            <span style="font-size:12px;color:var(--tx2);display:flex;align-items:center;gap:4px">⚡ Fast reply</span>
+            <span style="font-size:12px;color:var(--tx2);display:flex;align-items:center;gap:4px">🛡️ Fully insured</span>
+          </div>
+        </div>
+
+        <!-- Form -->
+        <div class="screen-pad" style="padding-top:16px" id="cust-form">
+          <div style="font-size:13.5px;font-weight:700;margin-bottom:14px">Your details</div>
+
+          <div class="form-grid" style="margin-bottom:12px">
+            <div class="form-group" style="margin-bottom:0">
+              <div class="form-label">First name</div>
+              <input class="form-input" placeholder="Sarah" id="fi-first">
+            </div>
+            <div class="form-group" style="margin-bottom:0">
+              <div class="form-label">Last name</div>
+              <input class="form-input" placeholder="Mitchell" id="fi-last">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <div class="form-label">Phone number</div>
+            <input class="form-input" placeholder="07911 000 000" type="tel">
+          </div>
+          <div class="form-group">
+            <div class="form-label">Email</div>
+            <input class="form-input" placeholder="sarah@email.com" type="email">
+          </div>
+          <div class="form-group">
+            <div class="form-label">Postcode / Address</div>
+            <input class="form-input" placeholder="SE22 8AB">
+          </div>
+          <div class="form-group">
+            <div class="form-label">Describe your job</div>
+            <textarea class="form-input" placeholder="e.g. Flat roof on rear extension needs replacing. About 4m × 5m, leaking after heavy rain…" id="fi-desc"></textarea>
+          </div>
+
+          <div class="form-group">
+            <div class="form-label">Add photos <span style="color:var(--tx3)">(recommended)</span></div>
+            <div class="upload-zone" onclick="simulateUpload(this)">
+              <div class="upload-icon" id="upload-icon">📸</div>
+              <div class="upload-text" id="upload-text">Tap to upload photos</div>
+              <div class="upload-sub" id="upload-sub">Helps us give an accurate quote</div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <div class="form-label">Preferred contact method</div>
+            <div class="contact-pref">
+              <div class="cp-btn active" onclick="setPref(this)">📱 WhatsApp</div>
+              <div class="cp-btn" onclick="setPref(this)">💬 SMS</div>
+              <div class="cp-btn" onclick="setPref(this)">📞 Phone</div>
+              <div class="cp-btn" onclick="setPref(this)">📧 Email</div>
+            </div>
+          </div>
+
+          <button class="btn btn-pu btn-full" style="font-size:15px;padding:14px" onclick="submitLead()">
+            Get My Free Quote →
+          </button>
+          <div style="text-align:center;font-size:11.5px;color:var(--tx3);margin-top:8px;margin-bottom:24px">
+            🔒 No spam. Only used to send your quote.
+          </div>
+        </div>
+
+        <!-- Success state (hidden) -->
+        <div class="success-state" id="cust-success" style="display:none">
+          <div class="success-circle">✅</div>
+          <div style="font-size:20px;font-weight:800;letter-spacing:-.4px;margin-bottom:8px">Request received!</div>
+          <div style="font-size:14px;color:var(--tx2);line-height:1.6;max-width:280px;margin:0 auto 24px">
+            John's Roofing will be in touch shortly. You'll receive a WhatsApp confirmation in a few minutes.
+          </div>
+          <div class="card" style="text-align:left;margin-bottom:20px">
+            <div class="card-body">
+              <div style="font-size:12.5px;font-weight:700;margin-bottom:10px">What happens next?</div>
+              <div class="timeline">
+                <div class="tl-item">
+                  <div class="tl-dot done">✓</div>
+                  <div class="tl-body">
+                    <div class="tl-title">Form submitted</div>
+                    <div class="tl-desc">Your job details are with John's Roofing</div>
+                  </div>
+                </div>
+                <div class="tl-item">
+                  <div class="tl-dot active">🤖</div>
+                  <div class="tl-body">
+                    <div class="tl-title">AI creating your draft quote…</div>
+                    <div class="tl-desc">QuickQuo is analysing your job description</div>
+                    <div class="tl-badge" style="background:var(--pu-dim);color:var(--pu2)">
+                      <span class="ai-writing"><span class="ai-dot"></span><span class="ai-dot"></span><span class="ai-dot"></span></span> Working…
+                    </div>
+                  </div>
+                </div>
+                <div class="tl-item">
+                  <div class="tl-dot" style="opacity:.4">📤</div>
+                  <div class="tl-body" style="opacity:.5">
+                    <div class="tl-title">You'll receive your quote</div>
+                    <div class="tl-desc">Usually within the hour on WhatsApp</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <button class="btn btn-pu btn-full" onclick="switchDemo('ai-quote');document.getElementById('cust-success').style.display='none';document.getElementById('cust-form').style.display='block';showToast('See the AI draft quote →','purple')">
+            See the AI quote being created →
+          </button>
+        </div>
+
+      </div>
+
+      <!-- ═══════════════════════════════════════════════
+           SCREEN 3: AI QUOTE DRAFT
+      ═══════════════════════════════════════════════ -->
+      <div class="screen" id="screen-ai-quote">
+
+        <div class="page-header">
+          <div class="ph-row">
+            <div>
+              <div class="screen-title">AI Quote Draft</div>
+              <div class="screen-sub" style="margin-top:3px">Review before sending</div>
+            </div>
+            <div class="pill pill-ai" style="animation:livepulse 2s ease infinite">✨ AI Generated</div>
+          </div>
+        </div>
+
+        <div class="screen-pad">
+          <!-- Customer context -->
+          <div class="notif-banner purp" style="margin-bottom:14px">
+            <div class="notif-icon">👤</div>
+            <div class="notif-body">
+              <div class="notif-title">Sarah Mitchell · SE22</div>
+              <div class="notif-desc">Flat roof replacement · 2 photos attached · WhatsApp preferred</div>
+            </div>
+          </div>
+
+          <!-- AI greeting -->
+          <div class="card" style="margin-bottom:12px">
+            <div class="card-body">
+              <div style="font-size:11px;font-weight:700;letter-spacing:.5px;color:var(--pu2);margin-bottom:7px">📝 GREETING</div>
+              <div style="font-size:13.5px;color:var(--tx2);line-height:1.65" id="ai-greeting">
+                Dear Sarah, thank you for reaching out to John's Roofing. Following your request, I've prepared this estimate for the flat roof replacement at your SE22 property. Please review the details below.
+              </div>
+            </div>
+          </div>
+
+          <!-- Quote breakdown -->
+          <div style="font-size:11px;font-weight:700;letter-spacing:.5px;color:var(--tx3);margin-bottom:8px">💰 COST BREAKDOWN</div>
+          <div class="quote-box" style="margin-bottom:12px" id="quote-lines">
+            <div class="quote-line">
+              <div class="ql-label">Labour (2 days, 2 operatives)</div>
+              <div class="ql-amount">£800</div>
+            </div>
+            <div class="quote-line">
+              <div class="ql-label">GRP fibreglass membrane</div>
+              <div class="ql-amount">£320</div>
+            </div>
+            <div class="quote-line">
+              <div class="ql-label">Insulation boarding</div>
+              <div class="ql-amount">£100</div>
+            </div>
+            <div class="quote-line">
+              <div class="ql-label">Waste disposal</div>
+              <div class="ql-amount">£80</div>
+            </div>
+            <div class="quote-line">
+              <div class="ql-label">Timeline</div>
+              <div class="ql-amount" style="color:var(--tx2)">3–5 working days</div>
+            </div>
+            <div class="quote-total">
+              <span>Total (inc. VAT)</span>
+              <span class="qt-total-amount">£1,300</span>
+            </div>
+          </div>
+
+          <!-- AI confidence -->
+          <div class="card" style="margin-bottom:16px">
+            <div class="card-body" style="padding:12px">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+                <div style="font-size:12px;font-weight:600;color:var(--tx2)">AI Confidence</div>
+                <div style="font-size:12px;font-weight:700;color:var(--gr)">94% accurate</div>
+              </div>
+              <div style="height:6px;background:var(--bg4);border-radius:3px;overflow:hidden">
+                <div style="height:100%;width:94%;background:linear-gradient(90deg,var(--pu),var(--gr));border-radius:3px;transition:width 1s ease" id="conf-bar"></div>
+              </div>
+              <div style="font-size:11.5px;color:var(--tx3);margin-top:7px">Based on job description + 2 photos. Edit any line before sending.</div>
+            </div>
+          </div>
+
+          <!-- Trade switcher for AI quotes -->
+          <div style="font-size:11px;font-weight:700;letter-spacing:.5px;color:var(--tx3);margin-bottom:8px">📋 EXAMPLE QUOTES BY TRADE</div>
+          <div style="display:flex;gap:6px;overflow-x:auto;margin-bottom:12px;padding-bottom:2px">
+            <div class="trade-chip active" onclick="loadTradeQuote(this,'roofer')">🏠 Roofer</div>
+            <div class="trade-chip" onclick="loadTradeQuote(this,'plumber')">🔧 Plumber</div>
+            <div class="trade-chip" onclick="loadTradeQuote(this,'electrician')">⚡ Electrician</div>
+            <div class="trade-chip" onclick="loadTradeQuote(this,'carpenter')">🪵 Carpenter</div>
+            <div class="trade-chip" onclick="loadTradeQuote(this,'landscaper')">🌿 Landscaper</div>
+          </div>
+
+          <!-- Action buttons -->
+          <div style="display:flex;gap:8px;margin-bottom:8px">
+            <button class="btn btn-ghost" style="flex:1;font-size:13px;padding:11px" onclick="showToast('Quote editor opened','purple')">
+              ✏️ Edit Quote
+            </button>
+            <button class="btn btn-gr" style="flex:1;font-size:13px;padding:11px" onclick="sendQuote()">
+              📤 Send to Sarah
+            </button>
+          </div>
+          <button class="btn btn-ghost btn-full" style="font-size:13px;padding:11px;margin-bottom:20px" onclick="showToast('Draft saved — will remind you in 24h','blue')">
+            💾 Save Draft
+          </button>
+        </div>
+
+      </div>
+
+      <!-- ═══════════════════════════════════════════════
+           SCREEN 4: MISSED CALL AUTOMATION
+      ═══════════════════════════════════════════════ -->
+      <div class="screen" id="screen-missed">
+
+        <div class="page-header">
+          <div class="ph-row">
+            <div>
+              <div class="screen-title">Missed Calls</div>
+              <div class="screen-sub" style="margin-top:3px">Auto-SMS sent to every caller</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:7px">
+              <div class="live-dot"></div>
+              <span style="font-size:12px;font-weight:600;color:var(--gr)">Auto-reply ON</span>
+              <div class="toggle on" onclick="this.classList.toggle('on');this.classList.toggle('off');showToast(this.classList.contains('on')?'Auto-reply enabled':'Auto-reply paused',this.classList.contains('on')?'green':'orange')"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Auto-SMS template -->
+        <div class="screen-pad" style="margin-bottom:14px">
+          <div style="background:var(--bg3);border:1px solid var(--bo);border-radius:var(--r);padding:13px 14px">
+            <div style="font-size:11px;font-weight:700;letter-spacing:.5px;color:var(--tx3);margin-bottom:7px">📱 AUTO-SMS TEMPLATE</div>
+            <div style="font-size:13px;color:var(--tx2);line-height:1.6;font-style:italic">
+              "Hi, thanks for calling <strong style="color:var(--tx)">John's Roofing</strong>. We may be on-site right now. Get your free quote here: <strong style="color:var(--pu2)">quickquo.co.uk/johnsroofing</strong>"
+            </div>
+            <button class="btn btn-ghost btn-xs" style="margin-top:10px" onclick="showToast('Edit template in Settings','blue')">✏️ Edit template</button>
+          </div>
+        </div>
+
+        <!-- How it works mini-timeline -->
+        <div class="screen-pad" style="margin-bottom:14px">
+          <div class="label-sm" style="margin-bottom:10px">⚡ What happens automatically</div>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--card);border:1px solid var(--bo);border-radius:var(--r2)">
+              <div style="font-size:18px;width:28px;text-align:center">📵</div>
+              <div>
+                <div style="font-size:13px;font-weight:600">Call missed</div>
+                <div style="font-size:11.5px;color:var(--tx2)">Twilio detects no answer</div>
+              </div>
+              <div style="margin-left:auto;font-size:11px;color:var(--tx3)">Instant</div>
+            </div>
+            <div style="display:flex;justify-content:center;font-size:18px;color:var(--tx3)">↓</div>
+            <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--card);border:1px solid var(--bo);border-radius:var(--r2)">
+              <div style="font-size:18px;width:28px;text-align:center">📤</div>
+              <div>
+                <div style="font-size:13px;font-weight:600">SMS + quote link sent</div>
+                <div style="font-size:11.5px;color:var(--tx2)">Automatically, within seconds</div>
+              </div>
+              <div style="margin-left:auto;font-size:11px;color:var(--gr)">Auto ✓</div>
+            </div>
+            <div style="display:flex;justify-content:center;font-size:18px;color:var(--tx3)">↓</div>
+            <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--card);border:1px solid var(--bo);border-radius:var(--r2)">
+              <div style="font-size:18px;width:28px;text-align:center">👤</div>
+              <div>
+                <div style="font-size:13px;font-weight:600">Caller becomes a lead</div>
+                <div style="font-size:11.5px;color:var(--tx2)">Appears in your dashboard</div>
+              </div>
+              <div style="margin-left:auto;font-size:11px;color:var(--pu2)">→ CRM</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Missed calls list -->
+        <div class="card screen-pad" style="margin-bottom:14px">
+          <div class="section-head" style="padding:12px 0 10px">
+            <span class="label-sm">Today's missed calls</span>
+            <span class="pill pill-missed">3 new</span>
+          </div>
+          <div class="mc-item">
+            <div class="mc-icon">📵</div>
+            <div class="mc-info">
+              <div class="mc-num">+44 7911 234567</div>
+              <div class="mc-time">10:32 AM · 4 minutes ago</div>
+              <div class="mc-sms-sent">✓ Auto SMS sent · Form submitted!</div>
+            </div>
+            <button class="btn btn-xs btn-gr" onclick="showToast('Calling +44 7911 234567…','green')">Call</button>
+          </div>
+          <div class="mc-item">
+            <div class="mc-icon">📵</div>
+            <div class="mc-info">
+              <div class="mc-num">+44 7700 567890</div>
+              <div class="mc-time">09:15 AM · 1h 21m ago</div>
+              <div class="mc-sms-sent">✓ Auto SMS sent · No response yet</div>
+            </div>
+            <button class="btn btn-xs btn-gr" onclick="showToast('Calling +44 7700 567890…','green')">Call</button>
+          </div>
+          <div class="mc-item">
+            <div class="mc-icon">📵</div>
+            <div class="mc-info">
+              <div class="mc-num">+44 7800 112233</div>
+              <div class="mc-time">Yesterday · 16:47</div>
+              <div class="mc-sms-sent">✓ Auto SMS sent · No response yet</div>
+            </div>
+            <button class="btn btn-xs btn-gr" onclick="showToast('Calling +44 7800 112233…','green')">Call</button>
+          </div>
+        </div>
+
+        <!-- WhatsApp preview -->
+        <div class="screen-pad" style="margin-bottom:20px">
+          <div class="label-sm" style="margin-bottom:10px">📱 What the customer receives</div>
+          <div class="chat-area">
+            <div class="chat-header">
+              <div class="chat-av">JR</div>
+              <div class="chat-name-wrap">
+                <div class="chat-name">John's Roofing</div>
+                <div class="chat-status">QuickQuo automated reply</div>
+              </div>
+            </div>
+            <div class="chat-messages">
+              <div class="bubble recv">
+                Hi, thanks for calling John's Roofing. We may be on-site right now.<br><br>
+                Get your <strong>free quote</strong> here — takes 60 seconds:<br>
+                <span style="color:var(--pu2)">quickquo.co.uk/johnsroofing</span>
+                <div class="bubble-time">10:32 ✓✓</div>
+              </div>
+              <div class="bubble sent">
+                Thanks! Just filled in the form 👍
+                <div class="bubble-time">10:38 ✓✓</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ═══════════════════════════════════════════════
+           SCREEN 5: PIPELINE
+      ═══════════════════════════════════════════════ -->
+      <div class="screen" id="screen-pipeline">
+
+        <div class="page-header">
+          <div class="ph-row">
+            <div>
+              <div class="screen-title">Pipeline</div>
+              <div class="screen-sub" style="margin-top:3px">Drag leads through stages</div>
+            </div>
+            <div style="font-size:13px;font-weight:600;color:var(--gr)">£18,450 <span style="color:var(--tx3);font-weight:400">active</span></div>
+          </div>
+        </div>
+
+        <!-- Conversion stats -->
+        <div class="screen-pad" style="margin-bottom:12px">
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
+            <div style="background:var(--card);border:1px solid var(--bo);border-radius:var(--r2);padding:10px;text-align:center">
+              <div style="font-size:18px;font-weight:800;color:var(--pu2)">62%</div>
+              <div style="font-size:11px;color:var(--tx3)">Conversion</div>
+            </div>
+            <div style="background:var(--card);border:1px solid var(--bo);border-radius:var(--r2);padding:10px;text-align:center">
+              <div style="font-size:18px;font-weight:800;color:var(--gr)">18m</div>
+              <div style="font-size:11px;color:var(--tx3)">Avg. reply</div>
+            </div>
+            <div style="background:var(--card);border:1px solid var(--bo);border-radius:var(--r2);padding:10px;text-align:center">
+              <div style="font-size:18px;font-weight:800;color:var(--or)">£2.8k</div>
+              <div style="font-size:11px;color:var(--tx3)">Avg. job</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Kanban columns horizontal scroll -->
+        <div class="pipeline-scroll">
+
+          <!-- New -->
+          <div class="pipeline-col">
+            <div class="pipeline-col-head" style="background:var(--pu-dim);color:var(--pu2)">
+              <span>🔥 New</span><span style="opacity:.6">4</span>
+            </div>
+            <div class="pipeline-col-body" style="padding:6px">
+              <div class="pipeline-card card-hover" onclick="showToast('Sarah opened — tap to quote','purple')">
+                <div class="pc-name">Sarah Mitchell</div>
+                <div class="pc-job">Flat roof · SE22</div>
+                <div class="pc-foot"><span class="pc-amt">~£1,300</span><span class="pc-date">2m</span></div>
+              </div>
+              <div class="pipeline-card card-hover" onclick="showToast('David opened','blue')">
+                <div class="pc-name">David Walsh</div>
+                <div class="pc-job">Ridge tiles · SW16</div>
+                <div class="pc-foot"><span class="pc-amt">~£450</span><span class="pc-date">1h</span></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Contacted -->
+          <div class="pipeline-col">
+            <div class="pipeline-col-head" style="background:var(--bl2);color:var(--bl)">
+              <span>📞 Contacted</span><span style="opacity:.6">3</span>
+            </div>
+            <div class="pipeline-col-body" style="padding:6px">
+              <div class="pipeline-card card-hover" onclick="showToast('Priya opened','blue')">
+                <div class="pc-name">Priya Kumar</div>
+                <div class="pc-job">Flat repair · N1</div>
+                <div class="pc-foot"><span class="pc-amt">~£600</span><span class="pc-date">3h</span></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Quoted -->
+          <div class="pipeline-col">
+            <div class="pipeline-col-head" style="background:var(--or2);color:var(--or)">
+              <span>📄 Quoted</span><span style="opacity:.6">8</span>
+            </div>
+            <div class="pipeline-col-body" style="padding:6px">
+              <div class="pipeline-card card-hover" onclick="showToast('Tom's quote opened — £3,800','orange')">
+                <div class="pc-name">Tom Bridges</div>
+                <div class="pc-job">Re-roof · SE1</div>
+                <div class="pc-foot"><span class="pc-amt">£3,800</span><span class="pc-date">5h</span></div>
+              </div>
+              <div class="pipeline-card card-hover" onclick="showToast('Mark's quote — skylights','orange')">
+                <div class="pc-name">Mark Davies</div>
+                <div class="pc-job">Skylights · W4</div>
+                <div class="pc-foot"><span class="pc-amt">£1,100</span><span class="pc-date">2d</span></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Won -->
+          <div class="pipeline-col">
+            <div class="pipeline-col-head" style="background:var(--gr2);color:var(--gr)">
+              <span>🏆 Won</span><span style="opacity:.6">5</span>
+            </div>
+            <div class="pipeline-col-body" style="padding:6px">
+              <div class="pipeline-card card-hover" onclick="showToast('James Turner — £2,200 won!','green')">
+                <div class="pc-name">James Turner</div>
+                <div class="pc-job">Emergency · SE4</div>
+                <div class="pc-foot"><span class="pc-amt">£2,200</span><span class="pc-date">Mon</span></div>
+              </div>
+              <div class="pipeline-card card-hover" onclick="showToast('Claire Booth — guttering won','green')">
+                <div class="pc-name">Claire Booth</div>
+                <div class="pc-job">Guttering · BR1</div>
+                <div class="pc-foot"><span class="pc-amt">£380</span><span class="pc-date">Tue</span></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Completed -->
+          <div class="pipeline-col">
+            <div class="pipeline-col-head" style="background:rgba(255,255,255,0.05);color:var(--tx2)">
+              <span>✅ Done</span><span style="opacity:.6">12</span>
+            </div>
+            <div class="pipeline-col-body" style="padding:6px">
+              <div class="pipeline-card" style="opacity:.5">
+                <div class="pc-name">Peter Hollis</div>
+                <div class="pc-job">Re-felt · SE24</div>
+                <div class="pc-foot"><span class="pc-amt">£920</span><span class="pc-date">Last wk</span></div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Follow up reminders -->
+        <div class="screen-pad" style="margin-top:6px;margin-bottom:20px">
+          <div class="label-sm" style="margin-bottom:10px">⏰ Follow-up reminders</div>
+          <div class="notif-banner warn" style="cursor:pointer" onclick="showToast('Follow-up sent to Tom!','green')">
+            <div class="notif-icon">💬</div>
+            <div class="notif-body">
+              <div class="notif-title">Tom Bridges — no response to quote</div>
+              <div class="notif-desc">Sent 50h ago · Tap to send WhatsApp nudge</div>
+            </div>
+            <button class="btn btn-xs btn-gr" style="flex-shrink:0;align-self:center">Send</button>
+          </div>
+          <div class="notif-banner info" style="cursor:pointer" onclick="showToast('Reminder email sent to Mark','blue')">
+            <div class="notif-icon">📄</div>
+            <div class="notif-body">
+              <div class="notif-title">Mark Davies — quote pending 48h</div>
+              <div class="notif-desc">No reply yet · Send a polite reminder?</div>
+            </div>
+            <button class="btn btn-xs btn-ghost" style="flex-shrink:0;align-self:center">Remind</button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ═══════════════════════════════════════════════
+           SCREEN 6: REVIEWS & AUTOMATIONS
+      ═══════════════════════════════════════════════ -->
+      <div class="screen" id="screen-reviews">
+
+        <div class="page-header">
+          <div class="ph-row">
+            <div>
+              <div class="screen-title">Reviews & Automation</div>
+              <div class="screen-sub" style="margin-top:3px">Set once, runs itself</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:4px">
+              <span style="font-size:20px">⭐</span>
+              <span style="font-size:17px;font-weight:800;color:var(--ye)">4.9</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Review stats -->
+        <div class="kpi-grid" style="margin-bottom:14px">
+          <div class="kpi-card">
+            <div class="kpi-icon-wrap" style="background:rgba(251,191,36,0.1)">⭐</div>
+            <div class="kpi-val" style="color:var(--ye)">23</div>
+            <div class="kpi-lbl">Google Reviews</div>
+            <div class="kpi-delta d-up">↑ 6 this month</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-icon-wrap" style="background:var(--gr2)">📨</div>
+            <div class="kpi-val" style="color:var(--gr)">43%</div>
+            <div class="kpi-lbl">Response rate</div>
+            <div class="kpi-delta d-up">↑ from 12%</div>
+          </div>
+        </div>
+
+        <!-- Automation toggles -->
+        <div class="card screen-pad" style="margin-bottom:14px">
+          <div class="section-head" style="padding:12px 0 10px">
+            <span class="label-sm">⚡ Active automations</span>
+          </div>
+          <div class="auto-item">
+            <div class="auto-icon" style="background:var(--re2)">📵</div>
+            <div class="auto-body">
+              <div class="auto-title">Missed Call Auto-SMS</div>
+              <div class="auto-desc">Instant SMS with quote link on every missed call</div>
+              <div class="auto-meta auto-status"><span class="live-dot"></span> Running · 3 sent today</div>
+            </div>
+            <div class="toggle on" onclick="this.classList.toggle('on');this.classList.toggle('off');showToast('Automation updated','orange')"></div>
+          </div>
+          <div class="auto-item">
+            <div class="auto-icon" style="background:var(--pu-dim)">🤖</div>
+            <div class="auto-body">
+              <div class="auto-title">AI Quote Generation</div>
+              <div class="auto-desc">Draft quote when lead form submitted</div>
+              <div class="auto-meta auto-status"><span class="live-dot"></span> Running · 2 quotes today</div>
+            </div>
+            <div class="toggle on" onclick="this.classList.toggle('on');this.classList.toggle('off');showToast('AI quoting updated','orange')"></div>
+          </div>
+          <div class="auto-item">
+            <div class="auto-icon" style="background:var(--or2)">⏰</div>
+            <div class="auto-body">
+              <div class="auto-title">Quote Follow-Up (48h)</div>
+              <div class="auto-desc">WhatsApp nudge if no response after 48 hours</div>
+              <div class="auto-meta auto-status"><span class="live-dot"></span> Running · 1 sent today</div>
+            </div>
+            <div class="toggle on" onclick="this.classList.toggle('on');this.classList.toggle('off');showToast('Follow-up updated','orange')"></div>
+          </div>
+          <div class="auto-item">
+            <div class="auto-icon" style="background:rgba(251,191,36,0.1)">⭐</div>
+            <div class="auto-body">
+              <div class="auto-title">Review Request</div>
+              <div class="auto-desc">Auto-sent when job marked Completed</div>
+              <div class="auto-meta auto-status"><span class="live-dot"></span> Running · 11 reviews collected</div>
+            </div>
+            <div class="toggle on" onclick="this.classList.toggle('on');this.classList.toggle('off');showToast('Review request updated','orange')"></div>
+          </div>
+        </div>
+
+        <!-- WhatsApp review request preview -->
+        <div class="screen-pad" style="margin-bottom:14px">
+          <div class="label-sm" style="margin-bottom:10px">📱 Review request preview</div>
+          <div class="chat-area">
+            <div class="chat-header">
+              <div class="chat-av">JR</div>
+              <div class="chat-name-wrap">
+                <div class="chat-name">John's Roofing</div>
+                <div class="chat-status">Automated after job completion</div>
+              </div>
+            </div>
+            <div class="chat-messages">
+              <div class="bubble recv">
+                Hi James! 👋 Thanks so much for choosing <strong>John's Roofing</strong>. We really hope you're happy with the work!<br><br>
+                We'd love a quick Google review — it really helps other homeowners find us:<br>
+                <span style="color:var(--pu2)">g.co/johnsroofing-review</span> 🙏
+                <div class="bubble-time">10:00 ✓✓</div>
+              </div>
+              <div class="bubble sent">
+                Just left a 5-star review! Brilliant job 🌟
+                <div class="bubble-time">10:12 ✓✓</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent reviews -->
+        <div class="card screen-pad" style="margin-bottom:14px">
+          <div class="section-head" style="padding:12px 0 10px">
+            <span class="label-sm">Recent reviews</span>
+          </div>
+          <div class="review-card">
+            <div class="review-stars">★★★★★</div>
+            <div class="review-text">"John's team were brilliant — on time, tidy, and the quote was exactly as quoted. Would highly recommend."</div>
+            <div class="review-author">James Turner</div>
+            <div class="review-job">Flat roof repair · SE4</div>
+          </div>
+          <div class="review-card">
+            <div class="review-stars">★★★★★</div>
+            <div class="review-text">"Called three roofers. John was the only one who came back to me same day. Quick, professional, fair price."</div>
+            <div class="review-author">Claire Booth</div>
+            <div class="review-job">Guttering replacement · BR1</div>
+          </div>
+        </div>
+
+        <!-- Final CTA -->
+        <div class="cta-section" style="margin-bottom:24px">
+          <div class="cta-glow">✦</div>
+          <div style="font-size:19px;font-weight:800;letter-spacing:-.4px;margin-bottom:8px;line-height:1.2">
+            Ready to automate<br>your trade business?
+          </div>
+          <div style="font-size:13px;color:var(--tx2);line-height:1.6;margin-bottom:20px">
+            Join the QuickQuo waiting list and get <strong style="color:var(--tx)">2 weeks completely free</strong> at launch. No credit card required.
+          </div>
+          <button class="btn btn-pu btn-full" style="font-size:15px;padding:15px;margin-bottom:10px" onclick="window.open('https://quickquo.co.uk/#waitlist','_blank');showToast('Opening waitlist…','purple')">
+            ✦ Join The Waiting List
+          </button>
+          <button class="btn btn-ghost btn-full" style="font-size:13px;padding:12px" onclick="switchDemo('dashboard');showToast('Restarting demo from dashboard','blue')">
+            ← Explore Demo Again
+          </button>
+        </div>
+
+      </div>
+
+    </div><!-- /screens -->
+
+    <!-- BOTTOM NAV -->
+    <div class="bottom-nav" id="bottom-nav">
+      <div class="bnav-item active" id="bnav-dashboard" onclick="switchMain('dashboard')">
+        <div class="bnav-icon">⚡</div>
+        <div class="bnav-label">Dashboard</div>
+        <div class="bnav-dot" id="bnd-d"></div>
+      </div>
+      <div class="bnav-item" id="bnav-leads" onclick="switchMain('customer')">
+        <div class="bnav-icon">👤</div>
+        <div class="bnav-label">Quote Page</div>
+      </div>
+      <div class="bnav-item" id="bnav-ai" onclick="switchMain('ai-quote')">
+        <div class="bnav-icon">🤖</div>
+        <div class="bnav-label">AI Quote</div>
+      </div>
+      <div class="bnav-item" id="bnav-pipe" onclick="switchMain('pipeline')">
+        <div class="bnav-icon">📊</div>
+        <div class="bnav-label">Pipeline</div>
+      </div>
+      <div class="bnav-item" id="bnav-rev" onclick="switchMain('reviews')">
+        <div class="bnav-icon">⭐</div>
+        <div class="bnav-label">Automate</div>
+      </div>
+    </div>
+
+  </div><!-- /phone-viewport -->
+
+</div><!-- /demo-shell -->
+
+<!-- TOAST -->
+<div class="toast" id="toast">
+  <div class="toast-dot" id="toast-dot"></div>
+  <span id="toast-msg"></span>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+// CORE NAVIGATION
+// ═══════════════════════════════════════════════════════════
+const SCREENS = ['dashboard','customer','ai-quote','missed','pipeline','reviews'];
+const NAV_MAP = {
+  'dashboard': 'bnav-dashboard',
+  'customer':  'bnav-leads',
+  'ai-quote':  'bnav-ai',
+  'missed':    'bnav-dashboard',  // missed is in demo nav
+  'pipeline':  'bnav-pipe',
+  'reviews':   'bnav-rev',
+};
+const DEMO_NAV_MAP = {
+  'dashboard': 0,
+  'customer':  1,
+  'ai-quote':  2,
+  'missed':    3,
+  'pipeline':  4,
+  'reviews':   5,
+};
+
+let current = 'dashboard';
+
+function switchDemo(id) {
+  if (current === id) return;
+
+  // Hide old screen
+  const old = document.getElementById('screen-' + current);
+  if (old) {
+    old.classList.remove('active');
+  }
+
+  // Show new screen
+  const next = document.getElementById('screen-' + id);
+  if (next) {
+    next.classList.add('active');
+  }
+
+  current = id;
+
+  // Update demo nav tabs
+  const dnavBtns = document.querySelectorAll('.dnav-btn');
+  const idx = DEMO_NAV_MAP[id];
+  dnavBtns.forEach((b, i) => b.classList.toggle('active', i === idx));
+
+  // Scroll active tab into view
+  const activeTab = dnavBtns[idx];
+  if (activeTab) activeTab.scrollIntoView({ behavior:'smooth', block:'nearest', inline:'center' });
+
+  // Update bottom nav
+  updateBottomNav(id);
+
+  // Trigger screen-specific animations
+  if (id === 'ai-quote') animateConfBar();
+}
+
+function switchMain(id) {
+  switchDemo(id);
+}
+
+function updateBottomNav(id) {
+  document.querySelectorAll('.bnav-item').forEach(el => el.classList.remove('active'));
+  const mapped = NAV_MAP[id];
+  if (mapped) {
+    document.getElementById(mapped)?.classList.add('active');
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+// TOAST
+// ═══════════════════════════════════════════════════════════
+let toastTimer;
+function showToast(msg, color='green') {
+  const t  = document.getElementById('toast');
+  const d  = document.getElementById('toast-dot');
+  const m  = document.getElementById('toast-msg');
+  const cols = { green:'#34d399', purple:'#a78bfa', blue:'#60a5fa', orange:'#fb923c', red:'#f87171' };
+  d.style.background = cols[color] || cols.green;
+  m.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+// ═══════════════════════════════════════════════════════════
+// TRADE SWITCHER
+// ═══════════════════════════════════════════════════════════
+const TRADE_DATA = {
+  "John's Roofing":  { sub:'Roofer · SE London',   headline:'Get Your Free Roofing Quote', emoji:'🏠' },
+  "Dave's Plumbing": { sub:'Plumber · Bristol',     headline:'Get Your Free Plumbing Quote', emoji:'🔧' },
+  "Spark Electric":  { sub:'Electrician · Manchester', headline:'Get Your Free Electrical Quote', emoji:'⚡' },
+  "Oak Carpentry":   { sub:'Carpenter · Leeds',     headline:'Get Your Free Carpentry Quote', emoji:'🪵' },
+  "Green Gardens":   { sub:'Landscaper · Surrey',   headline:'Get Your Free Garden Quote', emoji:'🌿' },
+};
+
+function setTrade(el, name, sub) {
+  document.querySelectorAll('.demo-nav + .screens .screen#screen-dashboard .trade-chips .trade-chip').forEach(c => c.classList.remove('active'));
+  document.querySelectorAll('#screen-dashboard .trade-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+
+  // Update customer page if loaded
+  const d = TRADE_DATA[name];
+  if (d) {
+    const bizEl = document.getElementById('cust-biz-name');
+    const hlEl  = document.getElementById('cust-headline');
+    if (bizEl) bizEl.textContent = name;
+    if (hlEl)  hlEl.innerHTML = d.headline + '<br>in Minutes';
+  }
+
+  showToast('Switched to ' + name, 'purple');
+}
+
+// ═══════════════════════════════════════════════════════════
+// CONTACT PREFERENCE
+// ═══════════════════════════════════════════════════════════
+function setPref(el) {
+  document.querySelectorAll('.cp-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+}
+
+// ═══════════════════════════════════════════════════════════
+// PHOTO UPLOAD SIMULATION
+// ═══════════════════════════════════════════════════════════
+function simulateUpload(zone) {
+  const icon = document.getElementById('upload-icon');
+  const text = document.getElementById('upload-text');
+  const sub  = document.getElementById('upload-sub');
+  
+  icon.textContent = '⏳';
+  text.textContent = 'Uploading…';
+  sub.textContent  = '';
+  zone.style.borderColor = 'var(--pu)';
+  zone.style.background  = 'var(--pu-dim)';
+
+  setTimeout(() => {
+    icon.textContent = '✅';
+    text.textContent = '2 photos added';
+    sub.textContent  = 'roof-damage.jpg, rear-extension.jpg';
+    zone.style.borderColor = 'rgba(52,211,153,0.4)';
+    zone.style.background  = 'var(--gr2)';
+    showToast('2 photos uploaded successfully','green');
+  }, 1200);
+}
+
+// ═══════════════════════════════════════════════════════════
+// LEAD SUBMISSION
+// ═══════════════════════════════════════════════════════════
+function submitLead() {
+  const form    = document.getElementById('cust-form');
+  const success = document.getElementById('cust-success');
+  
+  form.style.opacity    = '0.5';
+  form.style.pointerEvents = 'none';
+  
+  showToast('Sending your request…', 'purple');
+  
+  setTimeout(() => {
+    form.style.display = 'none';
+    form.style.opacity = '1';
+    form.style.pointerEvents = 'auto';
+    success.style.display = 'block';
+    showToast('Request received! AI quote generating…', 'green');
+  }, 800);
+}
+
+// ═══════════════════════════════════════════════════════════
+// TRADE QUOTES DATA
+// ═══════════════════════════════════════════════════════════
+const TRADE_QUOTES = {
+  roofer: {
+    customer:'Sarah Mitchell · Flat roof replacement · SE22',
+    greeting:'Dear Sarah, thank you for reaching out to John\'s Roofing. I\'ve prepared this estimate for your flat roof replacement.',
+    lines:[
+      { label:'Labour (2 days, 2 operatives)', amt:'£800' },
+      { label:'GRP fibreglass membrane',        amt:'£320' },
+      { label:'Insulation boarding',             amt:'£100' },
+      { label:'Waste disposal',                  amt:'£80' },
+      { label:'Timeline', amt:'3–5 working days' },
+    ],
+    total:'£1,300',
+  },
+  plumber: {
+    customer:'Mark Harris · Bathroom refit · Bristol BS5',
+    greeting:'Dear Mark, thank you for contacting Dave\'s Plumbing. Here is my estimate for your full bathroom plumbing refit.',
+    lines:[
+      { label:'Labour (1.5 days)',          amt:'£420' },
+      { label:'New bath + shower valve',    amt:'£280' },
+      { label:'Pipework & fittings',        amt:'£95' },
+      { label:'Waste & supply connections', amt:'£60' },
+      { label:'Timeline', amt:'1–2 working days' },
+    ],
+    total:'£855',
+  },
+  electrician: {
+    customer:'Lisa Patel · Consumer unit upgrade · M14',
+    greeting:'Dear Lisa, thank you for getting in touch with Spark Electric. Here is my quote for your consumer unit upgrade.',
+    lines:[
+      { label:'Labour (full day)',         amt:'£350' },
+      { label:'Hager 18-way CU + RCDs',   amt:'£220' },
+      { label:'New circuit cabling',       amt:'£80' },
+      { label:'Testing & certification',   amt:'£65' },
+      { label:'Timeline', amt:'1 working day' },
+    ],
+    total:'£715',
+  },
+  carpenter: {
+    customer:'James Cook · Fitted wardrobes · LS1',
+    greeting:'Dear James, thank you for contacting Oak Carpentry. Here is my estimate for your alcove fitted wardrobe.',
+    lines:[
+      { label:'Labour (2 days)',         amt:'£480' },
+      { label:'18mm birch ply carcasses',amt:'£260' },
+      { label:'Shaker doors & hardware', amt:'£180' },
+      { label:'Paint & finishing',       amt:'£75' },
+      { label:'Timeline', amt:'2–3 working days' },
+    ],
+    total:'£995',
+  },
+  landscaper: {
+    customer:'Emma Davies · Garden redesign · GU22',
+    greeting:'Dear Emma, thank you for reaching out to Green Gardens. Here is my estimate for your rear garden redesign.',
+    lines:[
+      { label:'Labour (3 days)',           amt:'£720' },
+      { label:'Indian sandstone paving',   amt:'£340' },
+      { label:'Raised bed timber + soil',  amt:'£190' },
+      { label:'Planting & turf',           amt:'£150' },
+      { label:'Timeline', amt:'3–4 working days' },
+    ],
+    total:'£1,400',
+  },
+};
+
+function loadTradeQuote(el, trade) {
+  // Update active chip
+  document.querySelectorAll('#screen-ai-quote .trade-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+
+  const q = TRADE_QUOTES[trade];
+  if (!q) return;
+
+  // Update customer context
+  document.querySelector('#screen-ai-quote .notif-banner .notif-title').textContent = q.customer;
+
+  // Update greeting
+  document.getElementById('ai-greeting').textContent = q.greeting;
+
+  // Update quote lines
+  const ql = document.getElementById('quote-lines');
+  let html = '';
+  q.lines.forEach(l => {
+    html += `<div class="quote-line">
+      <div class="ql-label">${l.label}</div>
+      <div class="ql-amount" ${l.label==='Timeline'?'style="color:var(--tx2)"':''}>${l.amt}</div>
+    </div>`;
+  });
+  html += `<div class="quote-total"><span>Total (inc. VAT)</span><span class="qt-total-amount">${q.total}</span></div>`;
+  ql.innerHTML = html;
+
+  showToast('Loaded ' + trade + ' quote example', 'purple');
+}
+
+// ═══════════════════════════════════════════════════════════
+// SEND QUOTE FLOW
+// ═══════════════════════════════════════════════════════════
+function sendQuote() {
+  showToast('Sending quote via WhatsApp…', 'purple');
+  
+  setTimeout(() => {
+    showToast('Quote sent! Sarah will be notified ✓', 'green');
+    // Show WhatsApp preview after sending
+    setTimeout(() => switchDemo('missed'), 1500);
+  }, 1000);
+}
+
+// ═══════════════════════════════════════════════════════════
+// CONFIDENCE BAR ANIMATION
+// ═══════════════════════════════════════════════════════════
+function animateConfBar() {
+  const bar = document.getElementById('conf-bar');
+  if (!bar) return;
+  bar.style.width = '0%';
+  requestAnimationFrame(() => {
+    setTimeout(() => { bar.style.width = '94%'; }, 100);
+  });
+}
+
+// ═══════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', () => {
+  // Remove bnav dot once user interacts
+  setTimeout(() => {
+    const dot = document.getElementById('bnd-d');
+    if (dot) dot.style.opacity = '0';
+  }, 3000);
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,160 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── CSS Custom Properties ─────────────────────────────── */
+:root {
+  --font-geist-sans:        'Geist', system-ui, sans-serif;
+  --font-instrument-serif:  'Instrument Serif', Georgia, serif;
+  --font-geist-mono:        'Geist Mono', monospace;
+
+  /* Colours */
+  --bg:      #050508;
+  --bg2:     #08080f;
+  --bg3:     #0c0c17;
+  --card:    #0e0e1c;
+  --card2:   #121228;
+
+  --border:  rgba(255,255,255,0.055);
+  --border2: rgba(255,255,255,0.10);
+  --border3: rgba(255,255,255,0.15);
+
+  --text:    #ededf5;
+  --text2:   rgba(255,255,255,0.44);
+  --text3:   rgba(255,255,255,0.22);
+
+  --purple:  #8b5cf6;
+  --purple2: #a78bfa;
+  --purple3: #c4b5fd;
+  --purple4: #ddd6fe;
+}
+
+/* ── Base Reset ─────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
+
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+/* Grain overlay for marketing page lives in quickquo-landing.css */
+
+/* ── Typography ─────────────────────────────────────────── */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-geist-sans);
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+.font-serif {
+  font-family: var(--font-instrument-serif), Georgia, serif;
+}
+
+/* ── Focus styles (accessibility) ──────────────────────── */
+:focus-visible {
+  outline: 2px solid var(--purple2);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* ── Scrollbar ──────────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.1);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
+
+/* ── Selection ──────────────────────────────────────────── */
+::selection {
+  background: rgba(139,92,246,0.35);
+  color: white;
+}
+
+/* ── Utility classes used across components ─────────────── */
+@layer components {
+  .btn-primary {
+    @apply inline-flex items-center gap-2 font-semibold text-white
+           bg-purple-gradient rounded-[10px] px-7 py-[14px] text-[15px]
+           border-none cursor-pointer transition-all duration-200
+           shadow-purple-md hover:-translate-y-0.5 hover:shadow-purple-lg;
+  }
+
+  .btn-outline {
+    @apply inline-flex items-center gap-2 font-medium
+           border rounded-[10px]
+           px-[26px] py-[13px] text-[15px] cursor-pointer
+           transition-all duration-200;
+    color: rgba(255, 255, 255, 0.5);
+    background-color: rgba(255, 255, 255, 0.03);
+    border-color: rgba(255, 255, 255, 0.1);
+  }
+
+  .btn-outline:hover {
+    color: #fff;
+    border-color: rgba(255, 255, 255, 0.2);
+    background-color: rgba(255, 255, 255, 0.06);
+  }
+
+  .section-wrap {
+    @apply max-w-[1080px] mx-auto px-7 relative z-10;
+  }
+
+  .eyebrow {
+    @apply block text-[11px] font-bold tracking-[2px] uppercase text-purple-2 mb-4;
+  }
+
+  .display-heading {
+    @apply font-serif font-normal tracking-[-0.04em] leading-[1.06];
+    font-size: clamp(34px, 4.5vw, 52px);
+  }
+
+  .display-heading em {
+    font-style: italic;
+    color: var(--purple2);
+  }
+
+  .body-text {
+    @apply text-base leading-[1.75] font-light;
+    color: var(--text2);
+  }
+
+  /* Form elements */
+  .form-input {
+    @apply w-full rounded-[10px]
+           px-4 py-3 text-sm text-white font-normal
+           outline-none transition-all duration-150;
+    background-color: rgba(255, 255, 255, 0.045);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .form-input::placeholder {
+    color: rgba(255, 255, 255, 0.25);
+  }
+
+  .form-input:focus {
+    border-color: rgba(139, 92, 246, 0.55);
+    background-color: rgba(139, 92, 246, 0.12);
+  }
+
+  /* Card base */
+  .card-base {
+    @apply bg-card border border-border rounded-[14px]
+           transition-all duration-200
+           hover:-translate-y-0.5;
+  }
+
+  .card-base:hover {
+    border-color: rgba(255, 255, 255, 0.1);
+  }
+}
